@@ -1,4 +1,4 @@
-name: Terratest - terraform-provider-easy-brick-category-purpose
+name: Terratest - terraform-azurerm-easy-brick-network-vnet
 
 # on:
 #   push:
@@ -43,5 +43,5 @@ jobs:
 
     - name: Clean up failed resources
       run: |
-        az group delete --name rgrp-tde3-it-terratest-network-nic --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }} --yes
+        az group delete --name rgrp-tde3-ic-terratest-network-vnet --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }} --yes
       if: failure()

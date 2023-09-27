@@ -12,5 +12,5 @@ output "client_id" {
 
 #rgrp
 output "resource_group_name" {
-  value = azurerm_resource_group.RGRP.name
+  value = azurerm_resource_group.rgrp-tde3-ic-terratest-network-vnet.name
 }
