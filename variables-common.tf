@@ -15,8 +15,8 @@ variable "resource_group_object" {
   type        = any
 
   validation {
-    condition     = can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.resource_group_object))
-    error_message = "Invalid format for resource_group_object. It should match the format: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourcegroupname"
+    condition = can(regex("^/subscriptions/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/resourceGroups/[a-zA-Z0-9_-]+$", var.resource_group_object.id))
+    error_message = "Invalid format for resource_group_object.id. It should match the format: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourcegroupname"
   }
 
 }
