@@ -48,12 +48,6 @@ module "azurerm-network-vnet" {
           service_name    = "Microsoft.Web/serverFarms"
           service_action  = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
         }
-
-        aci = {
-          delegation_name = "aci"
-          service_name    = "Microsoft.ContainerInstance/containerGroups"
-          service_action  = ["Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action"]
-        }
       }
     }
 
@@ -80,6 +74,13 @@ module "azurerm-network-vnet" {
     additional2 = {
       name             = "snet-tde3-ic-additional2"
       address_prefixes = ["10.0.11.0/24"]
+      delegation = {
+        aci = {
+          delegation_name = "aci"
+          service_name    = "Microsoft.ContainerInstance/containerGroups"
+          service_action  = ["Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action"]
+        }
+      }
     }
   }
 
