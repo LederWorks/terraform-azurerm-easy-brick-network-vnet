@@ -213,6 +213,7 @@ Default: `null`
 
 Description:     <!-- markdownlint-disable-file MD033 MD012 -->
     (Optional) Additional Subnets to create.
+
     `name`                                          - (Required) The name of the subnet. Changing this forces a new resource to be created.
 
     `address_prefixes`                              - (Required) The address prefixes to use for the subnet.
@@ -276,6 +277,7 @@ Default: `null`
 
 Description:     <!-- markdownlint-disable-file MD033 MD012 -->
     (Optional) Custom Subnets to create.
+
     `name`                                          - (Required) The name of the subnet. Changing this forces a new resource to be created.
 
     `address_prefixes`                              - (Required) The address prefixes to use for the subnet.
@@ -339,6 +341,7 @@ Default: `null`
 
 Description:     <!-- markdownlint-disable-file MD033 MD012 -->
     (Optional) Default Subnets to create.
+
     `name`                                          - (Required) The name of the subnet. Changing this forces a new resource to be created.
 
     `address_prefixes`                              - (Required) The address prefixes to use for the subnet.
