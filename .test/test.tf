@@ -22,7 +22,7 @@ module "azurerm-network-vnet" {
   # vnet_bgp                          = ""
   # vnet_ddos_protection_plan_enabled = true
   # vnet_ddos_protection_plan_id      = ""
-  vnet_encryption_state             = "AllowUnencrypted"
+  # vnet_encryption_state             = "AllowUnencrypted"
 
 
   ### Local Variables ###
