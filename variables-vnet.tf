@@ -122,7 +122,7 @@ variable "vnet_default_subnets" {
   #   condition = var.vnet_default_subnets == null || try(alltrue([
   #     for o in var.vnet_default_subnets : 
   #   ]))
-    
+
   #   # can(
   #   #   index(
   #   #     [
