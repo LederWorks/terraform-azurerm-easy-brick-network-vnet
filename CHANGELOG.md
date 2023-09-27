@@ -1,5 +1,10 @@
 # Change Log
 
+## v0.2.1
+BUG FIXES:
+- Updated document format
+- Terradocs workflow moved to pull request
+
 ## v0.2.0
 FEATURES:
 - Initial version
