@@ -106,8 +106,8 @@ variable "vnet_default_subnets" {
   type = map(object({
     name                                          = string
     address_prefixes                              = list(string)
-    private_endpoint_network_policies_enabled     = optional(bool)
-    private_link_service_network_policies_enabled = optional(bool)
+    private_endpoint_network_policies_enabled     = optional(bool, false)
+    private_link_service_network_policies_enabled = optional(bool, false)
     service_endpoints                             = optional(list(string))
     delegation = optional(map(object({
       delegation_name = optional(string)

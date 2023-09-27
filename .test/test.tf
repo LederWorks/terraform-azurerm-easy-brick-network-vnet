@@ -32,17 +32,15 @@ module "azurerm-network-vnet" {
   #########################
 
   vnet_default_subnets = {
+
     bastion = {
       name                                          = "AzureBastionSubnet"
       address_prefixes                              = ["172.20.0.0/26"]
-      private_endpoint_network_policies_enabled     = false
-      private_link_service_network_policies_enabled = false
     }
+
     default1 = {
       name                                          = "snet-tde3-ic-default1"
       address_prefixes                              = ["10.0.0.0/24"]
-      private_endpoint_network_policies_enabled     = false
-      private_link_service_network_policies_enabled = false
       service_endpoints                             = ["Microsoft.Storage", "Microsoft.KeyVault"]
       delegation = {
         nic = {
@@ -56,9 +54,8 @@ module "azurerm-network-vnet" {
     default2 = {
       name                                          = "snet-tde3-ic-default2"
       address_prefixes                              = ["10.0.1.0/24"]
-      private_endpoint_network_policies_enabled     = false
-      private_link_service_network_policies_enabled = false
-      service_endpoints                             = ["Microsoft.Storage", "Microsoft.KeyVault"]
+      private_endpoint_network_policies_enabled     = true
+      private_link_service_network_policies_enabled = true
     }
   }
 
@@ -70,18 +67,13 @@ module "azurerm-network-vnet" {
   vnet_additional_subnets = {
     additional1 = {
       name                                          = "snet-tde3-ic-additional1"
-      address_prefixes                              = ["10.1.0.0/24"]
-      private_endpoint_network_policies_enabled     = false
-      private_link_service_network_policies_enabled = false
+      address_prefixes                              = ["10.0.10.0/24"]
       service_endpoints                             = ["Microsoft.Storage", "Microsoft.KeyVault"]
     }
 
     additional2 = {
       name                                          = "snet-tde3-ic-additional2"
-      address_prefixes                              = ["10.1.1.0/24"]
-      private_endpoint_network_policies_enabled     = false
-      private_link_service_network_policies_enabled = false
-      service_endpoints                             = ["Microsoft.Storage", "Microsoft.KeyVault"]
+      address_prefixes                              = ["10.0.11.0/24"]
     }
   }
 
@@ -93,18 +85,14 @@ module "azurerm-network-vnet" {
   vnet_custom_subnets = {
     custom1 = {
       name                                          = "snet-tde3-ic-custom1"
-      address_prefixes                              = ["10.2.0.0/24"]
-      private_endpoint_network_policies_enabled     = false
-      private_link_service_network_policies_enabled = false
-      service_endpoints                             = ["Microsoft.Storage", "Microsoft.KeyVault"]
+      address_prefixes                              = ["10.0.20.0/24"]
+      private_endpoint_network_policies_enabled     = true
     }
 
     custom2 = {
       name                                          = "snet-tde3-ic-custom2"
-      address_prefixes                              = ["10.2.1.0/24"]
-      private_endpoint_network_policies_enabled     = false
-      private_link_service_network_policies_enabled = false
-      service_endpoints                             = ["Microsoft.Storage", "Microsoft.KeyVault"]
+      address_prefixes                              = ["10.0.21.0/24"]
+      private_link_service_network_policies_enabled = true
     }
   }
 
