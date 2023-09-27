@@ -67,7 +67,7 @@ variable "vnet_encryption_state" {
   default     = null
 
   validation {
-    condition     = can(index([null, "DropUnencrypted", "AllowUnencrypted"], var.vnet_encryption_state))
+    condition     = var.vnet_encryption_state == null || can(index([null, "DropUnencrypted", "AllowUnencrypted"], var.vnet_encryption_state))
     error_message = "Invalid value for vnet_encryption_state. Valid values are DropUnencrypted, or AllowUnencrypted."
   }
 

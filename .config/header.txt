@@ -13,6 +13,15 @@ This module implements the [VNET](https://lederworks.com/docs/microsoft-azure/br
 - Ensure pre-requisite resources are created.
 - Create a Terraform configuration that pulls in this module and specifies values for the required variables.
 
+## Feature Registrations
+
+### VNET encryption
+```
+az feature register --namespace Microsoft.Network --name EnableVNetEncryption
+az feature show --namespace Microsoft.Network --name EnableVNetEncryption
+az provider register -n Microsoft.Network
+```
+
 ## Disclaimer / Known Issues
 - Disclaimers
 - Known Issues
