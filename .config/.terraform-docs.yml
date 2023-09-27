@@ -24,12 +24,12 @@ content: |-
 
   ## Examples
   
-  ### Example 1
+  ### Just give me a new VNET
   ```hcl
   {{ include ".examples/example1.tf" }}
   ```
 
-  ### Example 2
+  ### Existing VNET with [cidrsubnet](https://developer.hashicorp.com/terraform/language/functions/cidrsubnet) function
   ```hcl
   {{ include ".examples/example2.tf" }}
   ```
