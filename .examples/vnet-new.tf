@@ -1,4 +1,3 @@
-################################ New VNET
 module "network-vnet" {
   source  = "LederWorks/easy-brick-network-vnet/azurerm"
   version = "X.X.X"
@@ -55,5 +54,5 @@ module "network-vnet" {
   vnet_additional_subnets = {}
 
   vnet_custom_subnets = {}
-  
+
 }
