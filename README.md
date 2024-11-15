@@ -233,20 +233,20 @@ Description:     <!-- markdownlint-disable-file MD033 MD012 -->
     `private_endpoint_network_policies`             - (Optional) Enable or Disable network policies for the private endpoint on the subnet.  
                                                       Possible values are Disabled, Enabled, NetworkSecurityGroupEnabled and RouteTableEnabled. Defaults to Disabled.
 
-                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set _private\_link\_service\_network\_policies\_enabled_ in the subnet to Disabled.  
+                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set `private_link_service_network_policies_enabled` in the subnet to Disabled.  
                                                       This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
-                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
 
-                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the _private\_link\_service\_network\_policies\_enabled_ in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
+                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the `private_link_service_network_policies_enabled` in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
                                                       This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
-                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
 
                                                       For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-endpoint-network-policy?tabs=network-policy-portal.
 
     `private_link_service_network_policies_enabled` - (Optional) Enable or Disable network policies for the private link service on the subnet. Defaults to true.
 
-                                                      NOTE: When configuring Azure Private Link service, the explicit setting _private\_link\_service\_network\_policies\_enabled_ must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
-                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.  
+                                                      NOTE: When configuring Azure Private Link service, the explicit setting `private_link_service_network_policies_enabled` must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
+                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.  
                                                       For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-link-service-network-policy?tabs=private-link-network-policy-powershell.
 
     `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet. Possible values include:
@@ -368,20 +368,20 @@ Description:     <!-- markdownlint-disable-file MD033 MD012 -->
     `private_endpoint_network_policies`             - (Optional) Enable or Disable network policies for the private endpoint on the subnet.  
                                                       Possible values are Disabled, Enabled, NetworkSecurityGroupEnabled and RouteTableEnabled. Defaults to Disabled.
 
-                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set _private\_link\_service\_network\_policies\_enabled_ in the subnet to Disabled.  
+                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set `private_link_service_network_policies_enabled` in the subnet to Disabled.  
                                                       This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
-                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
 
-                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the _private\_link\_service\_network\_policies\_enabled_ in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
+                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the `private_link_service_network_policies_enabled` in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
                                                       This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
-                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
 
                                                       For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-endpoint-network-policy?tabs=network-policy-portal.
 
     `private_link_service_network_policies_enabled` - (Optional) Enable or Disable network policies for the private link service on the subnet. Defaults to true.
 
-                                                      NOTE: When configuring Azure Private Link service, the explicit setting _private\_link\_service\_network\_policies\_enabled_ must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
-                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.  
+                                                      NOTE: When configuring Azure Private Link service, the explicit setting `private_link_service_network_policies_enabled` must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
+                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.  
                                                       For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-link-service-network-policy?tabs=private-link-network-policy-powershell.
 
     `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet. Possible values include:
@@ -503,20 +503,20 @@ Description:     <!-- markdownlint-disable-file MD033 MD012 -->
     `private_endpoint_network_policies`             - (Optional) Enable or Disable network policies for the private endpoint on the subnet.  
                                                       Possible values are Disabled, Enabled, NetworkSecurityGroupEnabled and RouteTableEnabled. Defaults to Disabled.
 
-                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set _private\_endpoint\_network\_policies_ in the subnet to Disabled.  
+                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set `private_endpoint_network_policies` in the subnet to Disabled.  
                                                       This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
-                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
 
-                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the _private\_endpoint\_network\_policies_ in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
+                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the `private_endpoint_network_policies` in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
                                                       This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
-                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the __azurerm\_subnet\_network\_security\_group\_association__ resource.
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
 
                                                       For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-endpoint-network-policy?tabs=network-policy-portal.
 
     `private_link_service_network_policies_enabled` - (Optional) Enable or Disable network policies for the private link service on the subnet. Defaults to true.
 
-                                                      NOTE: When configuring Azure Private Link service, the explicit setting _private\_link\_service\_network\_policies\_enabled_ must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
-                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the _azurerm\_subnet\_network\_security\_group\_association_ resource.  
+                                                      NOTE: When configuring Azure Private Link service, the explicit setting `private_link_service_network_policies_enabled` must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
+                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.  
                                                       For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-link-service-network-policy?tabs=private-link-network-policy-powershell.
 
     `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet. Possible values include:
