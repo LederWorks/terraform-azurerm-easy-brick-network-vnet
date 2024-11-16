@@ -350,7 +350,7 @@ Default: `null`
 
 ### <a name="input_vnet_bgp"></a> [vnet\_bgp](#input\_vnet\_bgp)
 
-Description: (Optional) The BGP community attribute in format <as-number>:<community-value> for the new VNET. The as-number segment is the Microsoft ASN, which is always 12076 for now.
+Description: n/a
 
 Type: `string`
 
@@ -620,7 +620,7 @@ Default: `false`
 
 ### <a name="input_vnet_dns_servers"></a> [vnet\_dns\_servers](#input\_vnet\_dns\_servers)
 
-Description: (Optional) List of IP addresses of DNS servers for the new VNET.
+Description: n/a
 
 Type: `set(string)`
 
