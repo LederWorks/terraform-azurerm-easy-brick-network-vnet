@@ -28,7 +28,6 @@ variable "vnet_name" {
       ))
     )
     error_message = "The vnet_name must be between 2 and 64 alphanumeric characters, hyphens, dots and underscores."
-
   }
 }
 
@@ -47,7 +46,7 @@ variable "vnet_dns_servers" {
   type    = set(string)
   default = null
   validation {
-    condition = var.vnet_dns_servers == null || alltrue([for dns in var.vnet_dns_servers : can(regex("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$", dns))])
+    condition     = var.vnet_dns_servers == null || alltrue([for dns in var.vnet_dns_servers : can(regex("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$", dns))])
     error_message = "Each DNS server must be a valid IPv4 address."
   }
 }
@@ -63,20 +62,17 @@ variable "vnet_flow_timeout_in_minutes" {
   type        = number
   default     = null
   validation {
-    condition     = var.vnet_flow_timeout_in_minutes == null || (var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
+    condition     = can(var.vnet_flow_timeout_in_minutes == null) || (var.vnet_flow_timeout_in_minutes != null && var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
     error_message = "The vnet_flow_timeout_in_minutes must be either null or a value between 4 and 30."
   }
 }
 
 variable "vnet_bgp" {
-
   type    = string
   default = null
   validation {
-    condition = var.vnet_bgp == null || can(regex(
-      "^12076:" # The BGP community attribute must start with '12076:'
-    , var.vnet_bgp))
-    error_message = "The vnet_bgp must be either null or start with '12076:'."
+    condition     = var.vnet_bgp == null || can(regex("^12076:", var.vnet_bgp))
+    error_message = "The vnet_bgp must be either null or start with 12076:."
   }
 }
 
@@ -97,16 +93,13 @@ variable "vnet_encryption_state" {
     <!-- markdownlint-disable-file MD033 MD012 -->
     (Optional)(Preview) Specifies if the encrypted VNET allows VM that does not support encryption. Possible values are DropUnencrypted and AllowUnencrypted.
     For more information check https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-encryption-overview.
-
   EOT
   type        = string
   default     = null
-
   validation {
     condition     = var.vnet_encryption_state == null || can(index([null, "DropUnencrypted", "AllowUnencrypted"], var.vnet_encryption_state))
     error_message = "Invalid value for vnet_encryption_state. Valid values are DropUnencrypted, or AllowUnencrypted."
   }
-
 }
 
 ################################ Default Subnets ################################
@@ -224,45 +217,6 @@ variable "vnet_default_subnets" {
     })))
   }))
   default = null
-
-  ################################ Validations
-  # validation {
-  #   condition = var.vnet_default_subnets == null || try(alltrue([
-  #     for o in var.vnet_default_subnets : 
-  #   ]))
-
-  #   # can(
-  #   #   index(
-  #   #     [
-  #   #       null,
-  #   #       "Microsoft.AzureActiveDirectory",
-  #   #       "Microsoft.AzureCosmosDB",
-  #   #       "Microsoft.ContainerRegistry",
-  #   #       "Microsoft.EventHub",
-  #   #       "Microsoft.KeyVault",
-  #   #       "Microsoft.ServiceBus",
-  #   #       "Microsoft.Sql",
-  #   #       "Microsoft.Storage",
-  #   #       "Microsoft.Storage.Global",
-  #   #       "Microsoft.Web"
-  #   #     ],
-  #   #     element(var.vnet_default_subnets.service_endpoints, 0)
-  #   #   )
-  #   # )
-
-  #   error_message = "Invalid value for service_endpoints."
-  # }
-
-  # validation {
-  #   condition     = can(index(["GitHub.Network/networkSettings", "Microsoft.ApiManagement/service", "Microsoft.Apollo/npu", "Microsoft.App/environments", "Microsoft.App/testClients", "Microsoft.AVS/PrivateClouds", "Microsoft.AzureCosmosDB/clusters", "Microsoft.BareMetal/AzureHostedService", "Microsoft.BareMetal/AzureHPC", "Microsoft.BareMetal/AzurePaymentHSM", "Microsoft.BareMetal/AzureVMware", "Microsoft.BareMetal/CrayServers", "Microsoft.BareMetal/MonitoringServers", "Microsoft.Batch/batchAccounts", "Microsoft.CloudTest/hostedpools", "Microsoft.CloudTest/images", "Microsoft.CloudTest/pools", "Microsoft.Codespaces/plans", "Microsoft.ContainerInstance/containerGroups", "Microsoft.ContainerService/managedClusters", "Microsoft.ContainerService/TestClients", "Microsoft.Databricks/workspaces", "Microsoft.DBforMySQL/flexibleServers", "Microsoft.DBforMySQL/servers", "Microsoft.DBforMySQL/serversv2", "Microsoft.DBforPostgreSQL/flexibleServers", "Microsoft.DBforPostgreSQL/serversv2", "Microsoft.DBforPostgreSQL/singleServers", "Microsoft.DelegatedNetwork/controller", "Microsoft.DevCenter/networkConnection", "Microsoft.DocumentDB/cassandraClusters", "Microsoft.Fidalgo/networkSettings", "Microsoft.HardwareSecurityModules/dedicatedHSMs", "Microsoft.Kusto/clusters", "Microsoft.LabServices/labplans", "Microsoft.Logic/integrationServiceEnvironments", "Microsoft.MachineLearningServices/workspaces", "Microsoft.Netapp/volumes", "Microsoft.Network/dnsResolvers", "Microsoft.Network/fpgaNetworkInterfaces", "Microsoft.Network/networkWatchers", "Microsoft.Network/virtualNetworkGateways", "Microsoft.Orbital/orbitalGateways", "Microsoft.PowerPlatform/enterprisePolicies", "Microsoft.PowerPlatform/vnetaccesslinks", "Microsoft.ServiceFabricMesh/networks", "Microsoft.ServiceNetworking/trafficControllers", "Microsoft.Singularity/accounts/networks", "Microsoft.Singularity/accounts/npu", "Microsoft.Sql/managedInstances", "Microsoft.Sql/managedInstancesOnebox", "Microsoft.Sql/managedInstancesStage", "Microsoft.Sql/managedInstancesTest", "Microsoft.StoragePool/diskPools", "Microsoft.StreamAnalytics/streamingJobs", "Microsoft.Synapse/workspaces", "Microsoft.Web/hostingEnvironments", "Microsoft.Web/serverFarms", "NGINX.NGINXPLUS/nginxDeployments", "PaloAltoNetworks.Cloudngfw/firewalls", "Qumulo.Storage/fileSystems"], element(self.delegation[0].service_name, 0)))
-  #   error_message = "Invalid value for service_name."
-  # }
-
-  # validation {
-  #   condition     = can(alltrue([for action in self.delegation[0].service_action : can(index(["Microsoft.Network/networkinterfaces/*", "Microsoft.Network/publicIPAddresses/join/action", "Microsoft.Network/publicIPAddresses/read", "Microsoft.Network/virtualNetworks/read", "Microsoft.Network/virtualNetworks/subnets/action", "Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action", "Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action"], action))]))
-  #   error_message = "Invalid value for service_action."
-  # }
-
 }
 
 ################################ Additional Subnets ################################
