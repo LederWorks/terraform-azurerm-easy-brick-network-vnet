@@ -1,14 +1,15 @@
 ################################ VNET
 resource "azurerm_virtual_network" "vnet" {
-  for_each = var.vnet_deploy ? toset(["1"]) : toset([])
+  for_each = var.vnet_deploy ? toset(["deploy"]) : toset([])
 
-  name                = var.vnet_name
-  location            = var.resource_group_object.location
-  resource_group_name = var.resource_group_object.name
-  address_space       = var.vnet_address_space
-  bgp_community       = var.vnet_bgp
-  dns_servers         = var.vnet_dns_servers
-  edge_zone           = var.vnet_edge_zone
+  name                    = var.vnet_name
+  location                = var.resource_group_object.location
+  resource_group_name     = var.resource_group_object.name
+  address_space           = var.vnet_address_space
+  bgp_community           = var.vnet_bgp
+  edge_zone               = var.vnet_edge_zone
+  flow_timeout_in_minutes = var.vnet_flow_timeout_in_minutes
+  tags                    = local.tags
 
   dynamic "ddos_protection_plan" {
     for_each = var.vnet_ddos_protection_plan_id != null ? [1] : []
@@ -26,7 +27,13 @@ resource "azurerm_virtual_network" "vnet" {
       enforcement = var.vnet_encryption_state
     }
   }
+}
 
+resource "azurerm_virtual_network_dns_servers" "vnet" {
+  for_each = var.vnet_deploy ? toset(["deploy"]) : toset([])
+
+  virtual_network_id = try(var.vnet_object.id, resource.azurerm_virtual_network.vnet["deploy"].id)
+  dns_servers        = var.vnet_dns_servers
 }
 
 ################################ Default Subnets
@@ -35,11 +42,13 @@ resource "azurerm_subnet" "default_subnet" {
 
   name                                          = each.value.name
   resource_group_name                           = var.resource_group_object.name
-  virtual_network_name                          = try(var.vnet_object.name, resource.azurerm_virtual_network.vnet[1].name)
+  virtual_network_name                          = try(var.vnet_object.name, resource.azurerm_virtual_network.vnet["deploy"].name)
   address_prefixes                              = each.value.address_prefixes
-  private_endpoint_network_policies_enabled     = coalesce(each.value.private_endpoint_network_policies_enabled, true)
+  default_outbound_access_enabled               = each.value.default_outbound_access_enabled
+  private_endpoint_network_policies             = each.value.private_endpoint_network_policies
   private_link_service_network_policies_enabled = coalesce(each.value.private_link_service_network_policies_enabled, true)
   service_endpoints                             = each.value.service_endpoints
+  service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
 
   dynamic "delegation" {
     for_each = each.value.delegation != null ? each.value.delegation : {}
@@ -52,7 +61,6 @@ resource "azurerm_subnet" "default_subnet" {
       }
     }
   }
-
 }
 
 ################################ Additional Subnets
@@ -61,11 +69,13 @@ resource "azurerm_subnet" "additional_subnet" {
 
   name                                          = each.value.name
   resource_group_name                           = var.resource_group_object.name
-  virtual_network_name                          = try(var.vnet_object.name, resource.azurerm_virtual_network.vnet[1].name)
+  virtual_network_name                          = try(var.vnet_object.name, resource.azurerm_virtual_network.vnet["deploy"].name)
   address_prefixes                              = each.value.address_prefixes
-  private_endpoint_network_policies_enabled     = each.value.private_endpoint_network_policies_enabled
-  private_link_service_network_policies_enabled = each.value.private_link_service_network_policies_enabled
+  default_outbound_access_enabled               = each.value.default_outbound_access_enabled
+  private_endpoint_network_policies             = each.value.private_endpoint_network_policies
+  private_link_service_network_policies_enabled = coalesce(each.value.private_link_service_network_policies_enabled, true)
   service_endpoints                             = each.value.service_endpoints
+  service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
 
   dynamic "delegation" {
     for_each = each.value.delegation != null ? each.value.delegation : {}
@@ -78,7 +88,6 @@ resource "azurerm_subnet" "additional_subnet" {
       }
     }
   }
-
 }
 
 ################################ Custom Subnets
@@ -87,11 +96,13 @@ resource "azurerm_subnet" "custom_subnet" {
 
   name                                          = each.value.name
   resource_group_name                           = var.resource_group_object.name
-  virtual_network_name                          = try(var.vnet_object.name, resource.azurerm_virtual_network.vnet[1].name)
+  virtual_network_name                          = try(var.vnet_object.name, resource.azurerm_virtual_network.vnet["deploy"].name)
   address_prefixes                              = each.value.address_prefixes
-  private_endpoint_network_policies_enabled     = coalesce(each.value.private_endpoint_network_policies_enabled, true)
+  default_outbound_access_enabled               = each.value.default_outbound_access_enabled
+  private_endpoint_network_policies             = each.value.private_endpoint_network_policies
   private_link_service_network_policies_enabled = coalesce(each.value.private_link_service_network_policies_enabled, true)
   service_endpoints                             = each.value.service_endpoints
+  service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
 
   dynamic "delegation" {
     for_each = each.value.delegation != null ? each.value.delegation : {}
@@ -104,5 +115,4 @@ resource "azurerm_subnet" "custom_subnet" {
       }
     }
   }
-
 }

@@ -16,10 +16,21 @@ This module implements the [VNET](https://lederworks.com/docs/microsoft-azure/br
 ## Feature Registrations
 
 ### VNET encryption
+With azcli:
+
 ```
 az feature register --namespace Microsoft.Network --name EnableVNetEncryption
 az feature show --namespace Microsoft.Network --name EnableVNetEncryption
 az provider register -n Microsoft.Network
+```
+
+With terraform:
+
+```
+resource "azurerm_subscription_feature" "vnet_encryption" {
+  feature_name = "EnableVNetEncryption"
+  provider_namespace = "Microsoft.Network"
+}
 ```
 
 ## Disclaimer / Known Issues

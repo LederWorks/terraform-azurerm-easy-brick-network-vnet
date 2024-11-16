@@ -4,7 +4,7 @@ locals {
     var.tags,
     {
       creation_mode                                  = "terraform"
-      terraform-provider-easy-brick-category-purpose = "vX.X.X"
+      terraform-provider-easy-brick-category-purpose = "v0.3.0"
     }
   )
 

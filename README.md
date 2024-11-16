@@ -17,10 +17,21 @@ This module implements the [VNET](https://lederworks.com/docs/microsoft-azure/br
 ## Feature Registrations
 
 ### VNET encryption
+With azcli:
+
 ```
 az feature register --namespace Microsoft.Network --name EnableVNetEncryption
 az feature show --namespace Microsoft.Network --name EnableVNetEncryption
 az provider register -n Microsoft.Network
+```
+
+With terraform:
+
+```
+resource "azurerm_subscription_feature" "vnet_encryption" {
+  feature_name = "EnableVNetEncryption"
+  provider_namespace = "Microsoft.Network"
+}
 ```
 
 ## Disclaimer / Known Issues
@@ -33,13 +44,13 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>=1.3.4)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.68.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 4.9.0)
 
 ## Providers
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.68.0)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 4.9.0)
 
 ## Examples
 
@@ -180,6 +191,7 @@ The following resources are used by this module:
 - [azurerm_subnet.custom_subnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_subnet.default_subnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_virtual_network.vnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
+- [azurerm_virtual_network_dns_servers.vnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network_dns_servers) (resource)
 
 ## Required Inputs
 
@@ -212,41 +224,112 @@ Default: `null`
 ### <a name="input_vnet_additional_subnets"></a> [vnet\_additional\_subnets](#input\_vnet\_additional\_subnets)
 
 Description:     <!-- markdownlint-disable-file MD033 MD012 -->
-    (Optional) Additional Subnets to create.
+    (Optional) A map of custom Subnets to create.
 
     `name`                                          - (Required) The name of the subnet. Changing this forces a new resource to be created.
 
     `address_prefixes`                              - (Required) The address prefixes to use for the subnet.
 
-    `private_endpoint_network_policies_enabled`     - (Optional) Enable or Disable network policies for the private endpoint on the subnet. Defaults to true.
+    `private_endpoint_network_policies`             - (Optional) Enable or Disable network policies for the private endpoint on the subnet.  
+                                                      Possible values are Disabled, Enabled, NetworkSecurityGroupEnabled and RouteTableEnabled. Defaults to Disabled.
+
+                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set `private_link_service_network_policies_enabled` in the subnet to Disabled.  
+                                                      This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
+
+                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the `private_link_service_network_policies_enabled` in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
+                                                      This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
+
+                                                      For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-endpoint-network-policy?tabs=network-policy-portal.
 
     `private_link_service_network_policies_enabled` - (Optional) Enable or Disable network policies for the private link service on the subnet. Defaults to true.
 
-    `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet.   
-                                                      Possible values include: Microsoft.AzureActiveDirectory, Microsoft.AzureCosmosDB, Microsoft.ContainerRegistry, Microsoft.EventHub, Microsoft.KeyVault, Microsoft.ServiceBus, Microsoft.Sql, Microsoft.Storage, Microsoft.Storage.Global and Microsoft.Web.  
-                                                    
-                                                      In order to use Microsoft.Storage.Global service endpoint (which allows access to virtual networks in other regions), you must enable the AllowGlobalTagsForStorage feature in your subscription.  
-                                                      For more info heck https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-cli#enabling-access-to-virtual-networks-in-other-regions-preview.
+                                                      NOTE: When configuring Azure Private Link service, the explicit setting `private_link_service_network_policies_enabled` must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
+                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.  
+                                                      For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-link-service-network-policy?tabs=private-link-network-policy-powershell.
 
-    `delegation` - (Optional) A map of subnet delegation objects.
-    
+    `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet. Possible values include:
+                                                        - Microsoft.AzureActiveDirectory
+                                                        - Microsoft.AzureCosmosDB
+                                                        - Microsoft.ContainerRegistry
+                                                        - Microsoft.EventHub, Microsoft.KeyVault
+                                                        - Microsoft.ServiceBus
+                                                        - Microsoft.Sql
+                                                        - Microsoft.Storage
+                                                        - Microsoft.Storage.Global
+                                                        - Microsoft.Web
+
+                                                      In order to use Microsoft.Storage.Global service endpoint (which allows access to virtual networks in other regions), you must enable the AllowGlobalTagsForStorage feature in your subscription.  
+                                                      For more details check https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-cli#enabling-access-to-virtual-networks-in-other-regions-preview.
+
+    `service_endpoint_policy_ids`                   - (Optional) A list of Service Endpoint Policy IDs to associate with the subnet.
+
+    `delegation` - (Optional) A list of subnet delegation objects.
+
       `delegation_name` - (Required) A name for this delegation.
-    
-      `service_name`    - (Required) The name of service to delegate to.  
-                          Possible values are GitHub.Network/networkSettings, Microsoft.ApiManagement/service, Microsoft.Apollo/npu, Microsoft.App/environments, Microsoft.App/testClients, Microsoft.AVS/PrivateClouds, Microsoft.AzureCosmosDB/clusters, Microsoft.BareMetal/AzureHostedService, Microsoft.BareMetal/AzureHPC, Microsoft.BareMetal/AzurePaymentHSM, Microsoft.BareMetal/AzureVMware, Microsoft.BareMetal/CrayServers, Microsoft.BareMetal/MonitoringServers, Microsoft.Batch/batchAccounts, Microsoft.CloudTest/hostedpools, Microsoft.CloudTest/images, Microsoft.CloudTest/pools, Microsoft.Codespaces/plans, Microsoft.ContainerInstance/containerGroups, Microsoft.ContainerService/managedClusters, Microsoft.ContainerService/TestClients, Microsoft.Databricks/workspaces, Microsoft.DBforMySQL/flexibleServers, Microsoft.DBforMySQL/servers, Microsoft.DBforMySQL/serversv2, Microsoft.DBforPostgreSQL/flexibleServers, Microsoft.DBforPostgreSQL/serversv2, Microsoft.DBforPostgreSQL/singleServers, Microsoft.DelegatedNetwork/controller, Microsoft.DevCenter/networkConnection, Microsoft.DocumentDB/cassandraClusters, Microsoft.Fidalgo/networkSettings, Microsoft.HardwareSecurityModules/dedicatedHSMs, Microsoft.Kusto/clusters, Microsoft.LabServices/labplans, Microsoft.Logic/integrationServiceEnvironments, Microsoft.MachineLearningServices/workspaces, Microsoft.Netapp/volumes, Microsoft.Network/dnsResolvers, Microsoft.Network/fpgaNetworkInterfaces, Microsoft.Network/networkWatchers., Microsoft.Network/virtualNetworkGateways, Microsoft.Orbital/orbitalGateways, Microsoft.PowerPlatform/enterprisePolicies, Microsoft.PowerPlatform/vnetaccesslinks, Microsoft.ServiceFabricMesh/networks, Microsoft.ServiceNetworking/trafficControllers, Microsoft.Singularity/accounts/networks, Microsoft.Singularity/accounts/npu, Microsoft.Sql/managedInstances, Microsoft.Sql/managedInstancesOnebox, Microsoft.Sql/managedInstancesStage, Microsoft.Sql/managedInstancesTest, Microsoft.StoragePool/diskPools, Microsoft.StreamAnalytics/streamingJobs, Microsoft.Synapse/workspaces, Microsoft.Web/hostingEnvironments, Microsoft.Web/serverFarms, NGINX.NGINXPLUS/nginxDeployments, PaloAltoNetworks.Cloudngfw/firewalls, and Qumulo.Storage/fileSystems.
-    
-      `service_action`  - (Optional) A list of Actions which should be delegated. This list is specific to the service to delegate to.  
-                          Possible values are Microsoft.Network/networkinterfaces/*, Microsoft.Network/publicIPAddresses/join/action, Microsoft.Network/publicIPAddresses/read, Microsoft.Network/virtualNetworks/read, Microsoft.Network/virtualNetworks/subnets/action, Microsoft.Network/virtualNetworks/subnets/join/action, Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action, and Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action.
+
+      `service_name`    - (Required) The name of service to delegate to. Possible values are:
+                            - GitHub.Network/networkSettings
+                            - Microsoft.ApiManagement/service
+                            - Microsoft.Apollo/npu
+                            - Microsoft.App/environments, Microsoft.App/testClients
+                            - Microsoft.AVS/PrivateClouds
+                            - Microsoft.AzureCosmosDB/clusters
+                            - Microsoft.BareMetal/AzureHostedService, Microsoft.BareMetal/AzureHPC, Microsoft.BareMetal/AzurePaymentHSM, Microsoft.BareMetal/AzureVMware, Microsoft.BareMetal/CrayServers, Microsoft.BareMetal/MonitoringServers
+                            - Microsoft.Batch/batchAccounts
+                            - Microsoft.CloudTest/hostedpools, Microsoft.CloudTest/images, Microsoft.CloudTest/pools
+                            - Microsoft.Codespaces/plans
+                            - Microsoft.ContainerInstance/containerGroups, Microsoft.ContainerService/managedClusters, Microsoft.ContainerService/TestClients
+                            - Microsoft.Databricks/workspaces
+                            - Microsoft.DBforMySQL/flexibleServers, Microsoft.DBforMySQL/servers, Microsoft.DBforMySQL/serversv2
+                            - Microsoft.DBforPostgreSQL/flexibleServers, Microsoft.DBforPostgreSQL/serversv2, Microsoft.DBforPostgreSQL/singleServers
+                            - Microsoft.DelegatedNetwork/controller
+                            - Microsoft.DevCenter/networkConnection
+                            - Microsoft.DocumentDB/cassandraClusters
+                            - Microsoft.Fidalgo/networkSettings-
+                            - Microsoft.HardwareSecurityModules/dedicatedHSMs
+                            - Microsoft.Kusto/clusters
+                            - Microsoft.LabServices/labplans
+                            - Microsoft.Logic/integrationServiceEnvironments
+                            - Microsoft.MachineLearningServices/workspaces
+                            - Microsoft.Netapp/volumes
+                            - Microsoft.Network/dnsResolvers, Microsoft.Network/fpgaNetworkInterfaces, Microsoft.Network/networkWatchers, Microsoft.Network/virtualNetworkGateways
+                            - Microsoft.Orbital/orbitalGateways
+                            - Microsoft.PowerPlatform/enterprisePolicies, Microsoft.PowerPlatform/vnetaccesslinks
+                            - Microsoft.ServiceFabricMesh/networks
+                            - Microsoft.ServiceNetworking/trafficControllers
+                            - Microsoft.Singularity/accounts/networks, Microsoft.Singularity/accounts/npu
+                            - Microsoft.Sql/managedInstances, Microsoft.Sql/managedInstancesOnebox, Microsoft.Sql/managedInstancesStage, Microsoft.Sql/managedInstancesTest
+                            - Microsoft.StoragePool/diskPools
+                            - Microsoft.StreamAnalytics/streamingJobs
+                            - Microsoft.Synapse/workspaces
+                            - Microsoft.Web/hostingEnvironments, Microsoft.Web/serverFarms
+                            - NGINX.NGINXPLUS/nginxDeployments
+                            - PaloAltoNetworks.Cloudngfw/firewalls
+                            - Qumulo.Storage/fileSystems
+
+      `service_action`  - (Optional) A list of Actions which should be delegated. This list is specific to the service to delegate to. Possible values are:
+                            - Microsoft.Network/networkinterfaces/*
+                            - Microsoft.Network/publicIPAddresses/join/action
+                            - Microsoft.Network/publicIPAddresses/read
+                            - Microsoft.Network/virtualNetworks/read
+                            - Microsoft.Network/virtualNetworks/subnets/action
+                            - Microsoft.Network/virtualNetworks/subnets/join/action
+                            - Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action
+                            - Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action
 
 Type:
 
 ```hcl
 map(object({
     name                                          = string
-    address_prefixes                              = list(string)
-    private_endpoint_network_policies_enabled     = optional(bool)
-    private_link_service_network_policies_enabled = optional(bool)
+    address_prefixes                              = set(string)
+    default_outbound_access_enabled               = optional(bool, true)
+    private_endpoint_network_policies             = optional(string, "Disabled")
+    private_link_service_network_policies_enabled = optional(bool, true)
     service_endpoints                             = optional(list(string))
+    service_endpoint_policy_ids                   = optional(set(string))
     delegation = optional(map(object({
       delegation_name = optional(string)
       service_name    = optional(string)
@@ -267,7 +350,7 @@ Default: `null`
 
 ### <a name="input_vnet_bgp"></a> [vnet\_bgp](#input\_vnet\_bgp)
 
-Description: (Optional) The BGP community attribute in format <as-number>:<community-value> for the new VNET.
+Description: n/a
 
 Type: `string`
 
@@ -276,41 +359,112 @@ Default: `null`
 ### <a name="input_vnet_custom_subnets"></a> [vnet\_custom\_subnets](#input\_vnet\_custom\_subnets)
 
 Description:     <!-- markdownlint-disable-file MD033 MD012 -->
-    (Optional) Custom Subnets to create.
+    (Optional) A map of custom Subnets to create.
 
     `name`                                          - (Required) The name of the subnet. Changing this forces a new resource to be created.
 
     `address_prefixes`                              - (Required) The address prefixes to use for the subnet.
 
-    `private_endpoint_network_policies_enabled`     - (Optional) Enable or Disable network policies for the private endpoint on the subnet. Defaults to true.
+    `private_endpoint_network_policies`             - (Optional) Enable or Disable network policies for the private endpoint on the subnet.  
+                                                      Possible values are Disabled, Enabled, NetworkSecurityGroupEnabled and RouteTableEnabled. Defaults to Disabled.
+
+                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set `private_link_service_network_policies_enabled` in the subnet to Disabled.  
+                                                      This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
+
+                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the `private_link_service_network_policies_enabled` in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
+                                                      This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
+
+                                                      For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-endpoint-network-policy?tabs=network-policy-portal.
 
     `private_link_service_network_policies_enabled` - (Optional) Enable or Disable network policies for the private link service on the subnet. Defaults to true.
 
-    `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet.   
-                                                      Possible values include: Microsoft.AzureActiveDirectory, Microsoft.AzureCosmosDB, Microsoft.ContainerRegistry, Microsoft.EventHub, Microsoft.KeyVault, Microsoft.ServiceBus, Microsoft.Sql, Microsoft.Storage, Microsoft.Storage.Global and Microsoft.Web.  
-                                                    
+                                                      NOTE: When configuring Azure Private Link service, the explicit setting `private_link_service_network_policies_enabled` must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
+                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.  
+                                                      For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-link-service-network-policy?tabs=private-link-network-policy-powershell.
+
+    `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet. Possible values include:
+                                                        - Microsoft.AzureActiveDirectory
+                                                        - Microsoft.AzureCosmosDB
+                                                        - Microsoft.ContainerRegistry
+                                                        - Microsoft.EventHub, Microsoft.KeyVault
+                                                        - Microsoft.ServiceBus
+                                                        - Microsoft.Sql
+                                                        - Microsoft.Storage
+                                                        - Microsoft.Storage.Global
+                                                        - Microsoft.Web
+
                                                       In order to use Microsoft.Storage.Global service endpoint (which allows access to virtual networks in other regions), you must enable the AllowGlobalTagsForStorage feature in your subscription.  
-                                                      For more info heck https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-cli#enabling-access-to-virtual-networks-in-other-regions-preview.
+                                                      For more details check https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-cli#enabling-access-to-virtual-networks-in-other-regions-preview.
+
+    `service_endpoint_policy_ids`                   - (Optional) A list of Service Endpoint Policy IDs to associate with the subnet.
 
     `delegation` - (Optional) A list of subnet delegation objects.
-    
+
       `delegation_name` - (Required) A name for this delegation.
-    
-      `service_name`    - (Required) The name of service to delegate to.  
-                          Possible values are GitHub.Network/networkSettings, Microsoft.ApiManagement/service, Microsoft.Apollo/npu, Microsoft.App/environments, Microsoft.App/testClients, Microsoft.AVS/PrivateClouds, Microsoft.AzureCosmosDB/clusters, Microsoft.BareMetal/AzureHostedService, Microsoft.BareMetal/AzureHPC, Microsoft.BareMetal/AzurePaymentHSM, Microsoft.BareMetal/AzureVMware, Microsoft.BareMetal/CrayServers, Microsoft.BareMetal/MonitoringServers, Microsoft.Batch/batchAccounts, Microsoft.CloudTest/hostedpools, Microsoft.CloudTest/images, Microsoft.CloudTest/pools, Microsoft.Codespaces/plans, Microsoft.ContainerInstance/containerGroups, Microsoft.ContainerService/managedClusters, Microsoft.ContainerService/TestClients, Microsoft.Databricks/workspaces, Microsoft.DBforMySQL/flexibleServers, Microsoft.DBforMySQL/servers, Microsoft.DBforMySQL/serversv2, Microsoft.DBforPostgreSQL/flexibleServers, Microsoft.DBforPostgreSQL/serversv2, Microsoft.DBforPostgreSQL/singleServers, Microsoft.DelegatedNetwork/controller, Microsoft.DevCenter/networkConnection, Microsoft.DocumentDB/cassandraClusters, Microsoft.Fidalgo/networkSettings, Microsoft.HardwareSecurityModules/dedicatedHSMs, Microsoft.Kusto/clusters, Microsoft.LabServices/labplans, Microsoft.Logic/integrationServiceEnvironments, Microsoft.MachineLearningServices/workspaces, Microsoft.Netapp/volumes, Microsoft.Network/dnsResolvers, Microsoft.Network/fpgaNetworkInterfaces, Microsoft.Network/networkWatchers., Microsoft.Network/virtualNetworkGateways, Microsoft.Orbital/orbitalGateways, Microsoft.PowerPlatform/enterprisePolicies, Microsoft.PowerPlatform/vnetaccesslinks, Microsoft.ServiceFabricMesh/networks, Microsoft.ServiceNetworking/trafficControllers, Microsoft.Singularity/accounts/networks, Microsoft.Singularity/accounts/npu, Microsoft.Sql/managedInstances, Microsoft.Sql/managedInstancesOnebox, Microsoft.Sql/managedInstancesStage, Microsoft.Sql/managedInstancesTest, Microsoft.StoragePool/diskPools, Microsoft.StreamAnalytics/streamingJobs, Microsoft.Synapse/workspaces, Microsoft.Web/hostingEnvironments, Microsoft.Web/serverFarms, NGINX.NGINXPLUS/nginxDeployments, PaloAltoNetworks.Cloudngfw/firewalls, and Qumulo.Storage/fileSystems.
-    
-      `service_action`  - (Optional) A list of Actions which should be delegated. This list is specific to the service to delegate to.  
-                          Possible values are Microsoft.Network/networkinterfaces/*, Microsoft.Network/publicIPAddresses/join/action, Microsoft.Network/publicIPAddresses/read, Microsoft.Network/virtualNetworks/read, Microsoft.Network/virtualNetworks/subnets/action, Microsoft.Network/virtualNetworks/subnets/join/action, Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action, and Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action.
+
+      `service_name`    - (Required) The name of service to delegate to. Possible values are:
+                            - GitHub.Network/networkSettings
+                            - Microsoft.ApiManagement/service
+                            - Microsoft.Apollo/npu
+                            - Microsoft.App/environments, Microsoft.App/testClients
+                            - Microsoft.AVS/PrivateClouds
+                            - Microsoft.AzureCosmosDB/clusters
+                            - Microsoft.BareMetal/AzureHostedService, Microsoft.BareMetal/AzureHPC, Microsoft.BareMetal/AzurePaymentHSM, Microsoft.BareMetal/AzureVMware, Microsoft.BareMetal/CrayServers, Microsoft.BareMetal/MonitoringServers
+                            - Microsoft.Batch/batchAccounts
+                            - Microsoft.CloudTest/hostedpools, Microsoft.CloudTest/images, Microsoft.CloudTest/pools
+                            - Microsoft.Codespaces/plans
+                            - Microsoft.ContainerInstance/containerGroups, Microsoft.ContainerService/managedClusters, Microsoft.ContainerService/TestClients
+                            - Microsoft.Databricks/workspaces
+                            - Microsoft.DBforMySQL/flexibleServers, Microsoft.DBforMySQL/servers, Microsoft.DBforMySQL/serversv2
+                            - Microsoft.DBforPostgreSQL/flexibleServers, Microsoft.DBforPostgreSQL/serversv2, Microsoft.DBforPostgreSQL/singleServers
+                            - Microsoft.DelegatedNetwork/controller
+                            - Microsoft.DevCenter/networkConnection
+                            - Microsoft.DocumentDB/cassandraClusters
+                            - Microsoft.Fidalgo/networkSettings-
+                            - Microsoft.HardwareSecurityModules/dedicatedHSMs
+                            - Microsoft.Kusto/clusters
+                            - Microsoft.LabServices/labplans
+                            - Microsoft.Logic/integrationServiceEnvironments
+                            - Microsoft.MachineLearningServices/workspaces
+                            - Microsoft.Netapp/volumes
+                            - Microsoft.Network/dnsResolvers, Microsoft.Network/fpgaNetworkInterfaces, Microsoft.Network/networkWatchers, Microsoft.Network/virtualNetworkGateways
+                            - Microsoft.Orbital/orbitalGateways
+                            - Microsoft.PowerPlatform/enterprisePolicies, Microsoft.PowerPlatform/vnetaccesslinks
+                            - Microsoft.ServiceFabricMesh/networks
+                            - Microsoft.ServiceNetworking/trafficControllers
+                            - Microsoft.Singularity/accounts/networks, Microsoft.Singularity/accounts/npu
+                            - Microsoft.Sql/managedInstances, Microsoft.Sql/managedInstancesOnebox, Microsoft.Sql/managedInstancesStage, Microsoft.Sql/managedInstancesTest
+                            - Microsoft.StoragePool/diskPools
+                            - Microsoft.StreamAnalytics/streamingJobs
+                            - Microsoft.Synapse/workspaces
+                            - Microsoft.Web/hostingEnvironments, Microsoft.Web/serverFarms
+                            - NGINX.NGINXPLUS/nginxDeployments
+                            - PaloAltoNetworks.Cloudngfw/firewalls
+                            - Qumulo.Storage/fileSystems
+
+      `service_action`  - (Optional) A list of Actions which should be delegated. This list is specific to the service to delegate to. Possible values are:
+                            - Microsoft.Network/networkinterfaces/*
+                            - Microsoft.Network/publicIPAddresses/join/action
+                            - Microsoft.Network/publicIPAddresses/read
+                            - Microsoft.Network/virtualNetworks/read
+                            - Microsoft.Network/virtualNetworks/subnets/action
+                            - Microsoft.Network/virtualNetworks/subnets/join/action
+                            - Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action
+                            - Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action
 
 Type:
 
 ```hcl
 map(object({
     name                                          = string
-    address_prefixes                              = list(string)
-    private_endpoint_network_policies_enabled     = optional(bool, true)
+    address_prefixes                              = set(string)
+    default_outbound_access_enabled               = optional(bool, true)
+    private_endpoint_network_policies             = optional(string, "Disabled")
     private_link_service_network_policies_enabled = optional(bool, true)
     service_endpoints                             = optional(list(string))
+    service_endpoint_policy_ids                   = optional(set(string))
     delegation = optional(map(object({
       delegation_name = optional(string)
       service_name    = optional(string)
@@ -340,41 +494,112 @@ Default: `null`
 ### <a name="input_vnet_default_subnets"></a> [vnet\_default\_subnets](#input\_vnet\_default\_subnets)
 
 Description:     <!-- markdownlint-disable-file MD033 MD012 -->
-    (Optional) Default Subnets to create.
+    (Optional) A map of custom Subnets to create.
 
     `name`                                          - (Required) The name of the subnet. Changing this forces a new resource to be created.
 
     `address_prefixes`                              - (Required) The address prefixes to use for the subnet.
 
-    `private_endpoint_network_policies_enabled`     - (Optional) Enable or Disable network policies for the private endpoint on the subnet. Defaults to true.
+    `private_endpoint_network_policies`             - (Optional) Enable or Disable network policies for the private endpoint on the subnet.  
+                                                      Possible values are Disabled, Enabled, NetworkSecurityGroupEnabled and RouteTableEnabled. Defaults to Disabled.
+
+                                                      NOTE: If you don't want to use network policies like user-defined Routes and Network Security Groups, you need to set `private_endpoint_network_policies` in the subnet to Disabled.  
+                                                      This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
+
+                                                      NOTE: If you want to use network policies like user-defined Routes and Network Security Groups, you need to set the `private_endpoint_network_policies` in the Subnet to Enabled/NetworkSecurityGroupEnabled/RouteTableEnabled.  
+                                                      This setting only applies to Private Endpoints in the Subnet and affects all Private Endpoints in the Subnet.  
+                                                      For other resources in the Subnet, access is controlled based via the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.
+
+                                                      For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-endpoint-network-policy?tabs=network-policy-portal.
 
     `private_link_service_network_policies_enabled` - (Optional) Enable or Disable network policies for the private link service on the subnet. Defaults to true.
 
-    `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet.   
-                                                      Possible values include: Microsoft.AzureActiveDirectory, Microsoft.AzureCosmosDB, Microsoft.ContainerRegistry, Microsoft.EventHub, Microsoft.KeyVault, Microsoft.ServiceBus, Microsoft.Sql, Microsoft.Storage, Microsoft.Storage.Global and Microsoft.Web.  
-                                                    
+                                                      NOTE: When configuring Azure Private Link service, the explicit setting `private_link_service_network_policies_enabled` must be set to false in the subnet since Private Link Service does not support network policies like user-defined Routes and Network Security Groups.  
+                                                      This setting only affects the Private Link service. For other resources in the subnet, access is controlled based on the Network Security Group which can be configured using the `azurerm_subnet_network_security_group_association` resource.  
+                                                      For more details check: https://learn.microsoft.com/en-gb/azure/private-link/disable-private-link-service-network-policy?tabs=private-link-network-policy-powershell.
+
+    `service_endpoints`                             - (Optional) The list of Service endpoints to associate with the subnet. Possible values include:
+                                                        - Microsoft.AzureActiveDirectory
+                                                        - Microsoft.AzureCosmosDB
+                                                        - Microsoft.ContainerRegistry
+                                                        - Microsoft.EventHub, Microsoft.KeyVault
+                                                        - Microsoft.ServiceBus
+                                                        - Microsoft.Sql
+                                                        - Microsoft.Storage
+                                                        - Microsoft.Storage.Global
+                                                        - Microsoft.Web
+
                                                       In order to use Microsoft.Storage.Global service endpoint (which allows access to virtual networks in other regions), you must enable the AllowGlobalTagsForStorage feature in your subscription.  
-                                                      For more info heck https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-cli#enabling-access-to-virtual-networks-in-other-regions-preview.
+                                                      For more details check https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-cli#enabling-access-to-virtual-networks-in-other-regions-preview.
+
+    `service_endpoint_policy_ids`                   - (Optional) A list of Service Endpoint Policy IDs to associate with the subnet.
 
     `delegation` - (Optional) A list of subnet delegation objects.
-    
+
       `delegation_name` - (Required) A name for this delegation.
-    
-      `service_name`    - (Required) The name of service to delegate to.  
-                          Possible values are GitHub.Network/networkSettings, Microsoft.ApiManagement/service, Microsoft.Apollo/npu, Microsoft.App/environments, Microsoft.App/testClients, Microsoft.AVS/PrivateClouds, Microsoft.AzureCosmosDB/clusters, Microsoft.BareMetal/AzureHostedService, Microsoft.BareMetal/AzureHPC, Microsoft.BareMetal/AzurePaymentHSM, Microsoft.BareMetal/AzureVMware, Microsoft.BareMetal/CrayServers, Microsoft.BareMetal/MonitoringServers, Microsoft.Batch/batchAccounts, Microsoft.CloudTest/hostedpools, Microsoft.CloudTest/images, Microsoft.CloudTest/pools, Microsoft.Codespaces/plans, Microsoft.ContainerInstance/containerGroups, Microsoft.ContainerService/managedClusters, Microsoft.ContainerService/TestClients, Microsoft.Databricks/workspaces, Microsoft.DBforMySQL/flexibleServers, Microsoft.DBforMySQL/servers, Microsoft.DBforMySQL/serversv2, Microsoft.DBforPostgreSQL/flexibleServers, Microsoft.DBforPostgreSQL/serversv2, Microsoft.DBforPostgreSQL/singleServers, Microsoft.DelegatedNetwork/controller, Microsoft.DevCenter/networkConnection, Microsoft.DocumentDB/cassandraClusters, Microsoft.Fidalgo/networkSettings, Microsoft.HardwareSecurityModules/dedicatedHSMs, Microsoft.Kusto/clusters, Microsoft.LabServices/labplans, Microsoft.Logic/integrationServiceEnvironments, Microsoft.MachineLearningServices/workspaces, Microsoft.Netapp/volumes, Microsoft.Network/dnsResolvers, Microsoft.Network/fpgaNetworkInterfaces, Microsoft.Network/networkWatchers., Microsoft.Network/virtualNetworkGateways, Microsoft.Orbital/orbitalGateways, Microsoft.PowerPlatform/enterprisePolicies, Microsoft.PowerPlatform/vnetaccesslinks, Microsoft.ServiceFabricMesh/networks, Microsoft.ServiceNetworking/trafficControllers, Microsoft.Singularity/accounts/networks, Microsoft.Singularity/accounts/npu, Microsoft.Sql/managedInstances, Microsoft.Sql/managedInstancesOnebox, Microsoft.Sql/managedInstancesStage, Microsoft.Sql/managedInstancesTest, Microsoft.StoragePool/diskPools, Microsoft.StreamAnalytics/streamingJobs, Microsoft.Synapse/workspaces, Microsoft.Web/hostingEnvironments, Microsoft.Web/serverFarms, NGINX.NGINXPLUS/nginxDeployments, PaloAltoNetworks.Cloudngfw/firewalls, and Qumulo.Storage/fileSystems.
-    
-      `service_action`  - (Optional) A list of Actions which should be delegated. This list is specific to the service to delegate to.  
-                          Possible values are Microsoft.Network/networkinterfaces/*, Microsoft.Network/publicIPAddresses/join/action, Microsoft.Network/publicIPAddresses/read, Microsoft.Network/virtualNetworks/read, Microsoft.Network/virtualNetworks/subnets/action, Microsoft.Network/virtualNetworks/subnets/join/action, Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action, and Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action.
+
+      `service_name`    - (Required) The name of service to delegate to. Possible values are:
+                            - GitHub.Network/networkSettings
+                            - Microsoft.ApiManagement/service
+                            - Microsoft.Apollo/npu
+                            - Microsoft.App/environments, Microsoft.App/testClients
+                            - Microsoft.AVS/PrivateClouds
+                            - Microsoft.AzureCosmosDB/clusters
+                            - Microsoft.BareMetal/AzureHostedService, Microsoft.BareMetal/AzureHPC, Microsoft.BareMetal/AzurePaymentHSM, Microsoft.BareMetal/AzureVMware, Microsoft.BareMetal/CrayServers, Microsoft.BareMetal/MonitoringServers
+                            - Microsoft.Batch/batchAccounts
+                            - Microsoft.CloudTest/hostedpools, Microsoft.CloudTest/images, Microsoft.CloudTest/pools
+                            - Microsoft.Codespaces/plans
+                            - Microsoft.ContainerInstance/containerGroups, Microsoft.ContainerService/managedClusters, Microsoft.ContainerService/TestClients
+                            - Microsoft.Databricks/workspaces
+                            - Microsoft.DBforMySQL/flexibleServers, Microsoft.DBforMySQL/servers, Microsoft.DBforMySQL/serversv2
+                            - Microsoft.DBforPostgreSQL/flexibleServers, Microsoft.DBforPostgreSQL/serversv2, Microsoft.DBforPostgreSQL/singleServers
+                            - Microsoft.DelegatedNetwork/controller
+                            - Microsoft.DevCenter/networkConnection
+                            - Microsoft.DocumentDB/cassandraClusters
+                            - Microsoft.Fidalgo/networkSettings-
+                            - Microsoft.HardwareSecurityModules/dedicatedHSMs
+                            - Microsoft.Kusto/clusters
+                            - Microsoft.LabServices/labplans
+                            - Microsoft.Logic/integrationServiceEnvironments
+                            - Microsoft.MachineLearningServices/workspaces
+                            - Microsoft.Netapp/volumes
+                            - Microsoft.Network/dnsResolvers, Microsoft.Network/fpgaNetworkInterfaces, Microsoft.Network/networkWatchers, Microsoft.Network/virtualNetworkGateways
+                            - Microsoft.Orbital/orbitalGateways
+                            - Microsoft.PowerPlatform/enterprisePolicies, Microsoft.PowerPlatform/vnetaccesslinks
+                            - Microsoft.ServiceFabricMesh/networks
+                            - Microsoft.ServiceNetworking/trafficControllers
+                            - Microsoft.Singularity/accounts/networks, Microsoft.Singularity/accounts/npu
+                            - Microsoft.Sql/managedInstances, Microsoft.Sql/managedInstancesOnebox, Microsoft.Sql/managedInstancesStage, Microsoft.Sql/managedInstancesTest
+                            - Microsoft.StoragePool/diskPools
+                            - Microsoft.StreamAnalytics/streamingJobs
+                            - Microsoft.Synapse/workspaces
+                            - Microsoft.Web/hostingEnvironments, Microsoft.Web/serverFarms
+                            - NGINX.NGINXPLUS/nginxDeployments
+                            - PaloAltoNetworks.Cloudngfw/firewalls
+                            - Qumulo.Storage/fileSystems
+
+      `service_action`  - (Optional) A list of Actions which should be delegated. This list is specific to the service to delegate to. Possible values are:
+                            - Microsoft.Network/networkinterfaces/*
+                            - Microsoft.Network/publicIPAddresses/join/action
+                            - Microsoft.Network/publicIPAddresses/read
+                            - Microsoft.Network/virtualNetworks/read
+                            - Microsoft.Network/virtualNetworks/subnets/action
+                            - Microsoft.Network/virtualNetworks/subnets/join/action
+                            - Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action
+                            - Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action
 
 Type:
 
 ```hcl
 map(object({
     name                                          = string
-    address_prefixes                              = list(string)
-    private_endpoint_network_policies_enabled     = optional(bool, false)
-    private_link_service_network_policies_enabled = optional(bool, false)
+    address_prefixes                              = set(string)
+    default_outbound_access_enabled               = optional(bool, true)
+    private_endpoint_network_policies             = optional(string, "Disabled")
+    private_link_service_network_policies_enabled = optional(bool, true)
     service_endpoints                             = optional(list(string))
+    service_endpoint_policy_ids                   = optional(set(string))
     delegation = optional(map(object({
       delegation_name = optional(string)
       service_name    = optional(string)
@@ -395,7 +620,7 @@ Default: `false`
 
 ### <a name="input_vnet_dns_servers"></a> [vnet\_dns\_servers](#input\_vnet\_dns\_servers)
 
-Description: (Optional) List of IP addresses of DNS servers for the new VNET.
+Description: n/a
 
 Type: `set(string)`
 
@@ -416,6 +641,14 @@ Description:     <!-- markdownlint-disable-file MD033 MD012 -->
     For more information check https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-encryption-overview.
 
 Type: `string`
+
+Default: `null`
+
+### <a name="input_vnet_flow_timeout_in_minutes"></a> [vnet\_flow\_timeout\_in\_minutes](#input\_vnet\_flow\_timeout\_in\_minutes)
+
+Description: (Optional) The flow timeout in minutes for the Virtual Network, which is used to enable connection tracking for intra-VM flows. Possible values are between 4 and 30 minutes.
+
+Type: `number`
 
 Default: `null`
 
@@ -491,7 +724,7 @@ Description: Azure Tenant ID of the existing or new VNET.
 ```text
 MIT License
 
-Copyright (c) 2023 LederWorks
+Copyright (c) 2024 LederWorks
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
