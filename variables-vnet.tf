@@ -61,10 +61,6 @@ variable "vnet_flow_timeout_in_minutes" {
   description = "(Optional) The flow timeout in minutes for the Virtual Network, which is used to enable connection tracking for intra-VM flows. Possible values are between 4 and 30 minutes."
   type        = number
   default     = null
-  validation {
-    condition     = can(var.vnet_flow_timeout_in_minutes == null) || (var.vnet_flow_timeout_in_minutes != null && var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
-    error_message = "The vnet_flow_timeout_in_minutes must be either null or a value between 4 and 30."
-  }
 }
 
 variable "vnet_bgp" {
