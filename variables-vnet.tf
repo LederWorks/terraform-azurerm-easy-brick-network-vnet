@@ -56,7 +56,7 @@ variable "vnet_flow_timeout_in_minutes" {
   type        = number
   default     = null
   validation {
-    condition     = var.vnet_flow_timeout_in_minutes == null || (var.vnet_flow_timeout_in_minutes != null && var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
+    condition     = var.vnet_flow_timeout_in_minutes == null || (var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
     error_message = "The vnet_flow_timeout_in_minutes must be either null or a value between 4 and 30."
   }
 }
