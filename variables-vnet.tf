@@ -1,26 +1,36 @@
 
-################################ VNET Variables
+################################ VNET Variables ################################
 variable "vnet_deploy" {
   description = "(Optional) Required only when a new VNET is required to deploy."
   type        = bool
   default     = false
 }
 
-################################ Existing VNET
+################################ Existing VNET ################################
 variable "vnet_object" {
   description = "(Optional) Required only when VNET is already existing."
   type        = any
   default     = null
 }
 
-################################ New VNET
+################################ New VNET ################################
 variable "vnet_name" {
   description = "(Optional) The name of the new VNET. Changing this forces a new resource to be created."
   type        = string
   default     = null
   validation {
-    condition     = var.vnet_name == null || (length(var.vnet_name) >= 2 && length(var.vnet_name) <= 64 && can(regex("^([a-zA-Z0-9][a-zA-Z0-9-._]+[a-zA-Z0-9_])$", var.vnet_name)))
+    condition = var.vnet_name == null || (
+      length(var.vnet_name) >= 2 &&
+      length(var.vnet_name) <= 64 &&
+      can(regex(
+        "^([a-zA-Z0-9]" +   # Start with alphanumeric
+        "[a-zA-Z0-9-._]+" + # Followed by alphanumeric, hyphens, dots, or underscores
+        "[a-zA-Z0-9_])$",   # End with alphanumeric or underscore
+        var.vnet_name
+      ))
+    )
     error_message = "The vnet_name must be between 2 and 64 alphanumeric characters, hyphens, dots and underscores."
+
   }
 }
 
@@ -36,11 +46,15 @@ variable "vnet_address_space" {
 }
 
 variable "vnet_dns_servers" {
-  description = "(Optional) List of IP addresses of DNS servers for the new VNET."
-  type        = set(string)
-  default     = null
+
+  type    = set(string)
+  default = null
   validation {
-    condition     = var.vnet_dns_servers == null || alltrue([for ip in var.vnet_dns_servers : can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}$", ip))])
+    condition = var.vnet_dns_servers == null || alltrue([for ip in var.vnet_dns_servers : can(regex(
+      "^([0-9]{1,3}\\.){3}" + # Match first three octets
+      "[0-9]{1,3}$",          # Match the last octet
+      ip
+    ))])
     error_message = "Each DNS server must be a valid IPv4 address."
   }
 }
@@ -56,17 +70,19 @@ variable "vnet_flow_timeout_in_minutes" {
   type        = number
   default     = null
   validation {
-    condition     = var.vnet_flow_timeout_in_minutes == null || (var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
+    condition     = can(var.vnet_flow_timeout_in_minutes == null) || (var.vnet_flow_timeout_in_minutes != null && var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
     error_message = "The vnet_flow_timeout_in_minutes must be either null or a value between 4 and 30."
   }
 }
 
 variable "vnet_bgp" {
-  description = "(Optional) The BGP community attribute in format <as-number>:<community-value> for the new VNET. The as-number segment is the Microsoft ASN, which is always 12076 for now."
-  type        = string
-  default     = null
+
+  type    = string
+  default = null
   validation {
-    condition     = var.vnet_bgp == null || can(regex("^12076:", var.vnet_bgp))
+    condition = var.vnet_bgp == null || can(regex(
+      "^12076:" # The BGP community attribute must start with '12076:'
+    , var.vnet_bgp))
     error_message = "The vnet_bgp must be either null or start with '12076:'."
   }
 }
@@ -100,7 +116,7 @@ variable "vnet_encryption_state" {
 
 }
 
-################################ Default Subnets
+################################ Default Subnets ################################
 variable "vnet_default_subnets" {
   description = <<EOT
     <!-- markdownlint-disable-file MD033 MD012 -->
@@ -256,7 +272,7 @@ variable "vnet_default_subnets" {
 
 }
 
-################################ Additional Subnets
+################################ Additional Subnets ################################
 variable "vnet_additional_subnets" {
   description = <<EOT
     <!-- markdownlint-disable-file MD033 MD012 -->
@@ -373,7 +389,7 @@ variable "vnet_additional_subnets" {
   default = null
 }
 
-################################ Custom Subnets
+################################ Custom Subnets ################################
 variable "vnet_custom_subnets" {
   description = <<EOT
     <!-- markdownlint-disable-file MD033 MD012 -->
