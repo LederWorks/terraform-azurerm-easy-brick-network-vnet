@@ -17,12 +17,12 @@ output "vnet_releaser" {
 
 ################################ VNET
 output "vnet_id" {
-  value       = var.vnet_object != null ? var.vnet_object.id : azurerm_virtual_network.vnet.1.id
+  value       = var.vnet_object != null ? var.vnet_object.id : azurerm_virtual_network.vnet.deploy.id
   description = "VNET ID of the existing or new VNET."
 }
 
 output "vnet_guid" {
-  value       = var.vnet_object != null ? var.vnet_object.id : azurerm_virtual_network.vnet.1.id
+  value       = var.vnet_object != null ? var.vnet_object.id : azurerm_virtual_network.vnet.deploy.id
   description = "VNET GUID of the existing or new VNET."
 }
 
