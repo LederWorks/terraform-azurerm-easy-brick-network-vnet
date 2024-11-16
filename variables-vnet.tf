@@ -23,9 +23,7 @@ variable "vnet_name" {
       length(var.vnet_name) >= 2 &&
       length(var.vnet_name) <= 64 &&
       can(regex(
-        "^([a-zA-Z0-9]" +   # Start with alphanumeric
-        "[a-zA-Z0-9-._]+" + # Followed by alphanumeric, hyphens, dots, or underscores
-        "[a-zA-Z0-9_])$",   # End with alphanumeric or underscore
+        "^[a-zA-Z0-9][a-zA-Z0-9-._]+[a-zA-Z0-9_]$",
         var.vnet_name
       ))
     )
@@ -46,15 +44,10 @@ variable "vnet_address_space" {
 }
 
 variable "vnet_dns_servers" {
-
   type    = set(string)
   default = null
   validation {
-    condition = var.vnet_dns_servers == null || alltrue([for ip in var.vnet_dns_servers : can(regex(
-      "^([0-9]{1,3}\\.){3}" + # Match first three octets
-      "[0-9]{1,3}$",          # Match the last octet
-      ip
-    ))])
+    condition = var.vnet_dns_servers == null || alltrue([for dns in var.vnet_dns_servers : can(regex("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$", dns))])
     error_message = "Each DNS server must be a valid IPv4 address."
   }
 }
@@ -70,7 +63,7 @@ variable "vnet_flow_timeout_in_minutes" {
   type        = number
   default     = null
   validation {
-    condition     = can(var.vnet_flow_timeout_in_minutes == null) || (var.vnet_flow_timeout_in_minutes != null && var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
+    condition     = var.vnet_flow_timeout_in_minutes == null || (var.vnet_flow_timeout_in_minutes >= 4 && var.vnet_flow_timeout_in_minutes <= 30)
     error_message = "The vnet_flow_timeout_in_minutes must be either null or a value between 4 and 30."
   }
 }
